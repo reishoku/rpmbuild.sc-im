@@ -2,14 +2,14 @@
 
 Name: %{pkg_name}
 Version: 0.8.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Spreadsheet Calculator Improvised -- An ncurses spreadsheet program for terminal
 
+
 License: BSD-4-Clause
-URL:     https://github.com/andmarti1424/sc-im
+URL: https://github.com/andmarti1424/sc-im
 Source0: https://github.com/andmarti1424/%{pkg_name}/archive/refs/tags/v%{version}.tar.gz
 
-# FIXME: Optimize Build/Runtime dependencies
 BuildRequires: gcc
 BuildRequires: pkgconf pkgconf-pkg-config
 BuildRequires: doxygen
@@ -20,7 +20,7 @@ BuildRequires: libzip-devel
 BuildRequires: zlib-devel
 BuildRequires: xz-devel
 BuildRequires: bzip2-devel
-BuildRequires: openssl-devel
+# BuildRequires: openssl-devel
 # BuildRequires: compat-openssl11
 BuildRequires: libxls-devel
 BuildRequires: libxlsxwriter-devel
@@ -37,11 +37,9 @@ Requires: compat-lua-libs
 Requires: zlib
 Requires: xz-libs
 Requires: bzip2-libs
-Requires: openssl-libs
+# Requires: openssl-libs
 Requires: libxls
 Requires: libxlsxwriter
-
-%define additional_cflags "-DMAXROWS=65536"
 
 %description
 Spreadsheet Calculator Improvised, aka sc-im, is an ncurses based, vim-like spreadsheet calculator.
@@ -53,11 +51,10 @@ sc-im is based on sc, whose original authors are James Gosling and Mark Weiser, 
 
 %build
 cd sc-im-%{version}/src
-export CFLAGS="%{optflags}"
-export CFLAGS+=" %{?additional_cflags}"
-%{make_build} -B \
-  -f ./Makefile \
-  sc-im \
+make -O \
+  -C %{_builddir}/sc-im-%{version}/src \
+  -f %{_builddir}/sc-im-%{version}/src/Makefile \
+  sc-im docs \
   DESTDIR=%{buildroot} \
   VERBOSE=1 \
   prefix=%{_prefix}
@@ -67,6 +64,15 @@ export CFLAGS+=" %{?additional_cflags}"
 rm -rf %{buildroot}
 %{__mkdir_p} %{buildroot}
 cd %{_builddir}/sc-im-%{version}/src
+make -O \
+  -C %{_builddir}/sc-im-%{version}/src \
+  -f %{_builddir}/sc-im-%{version}/src/Makefile \
+  install \
+  DESTDIR=%{buildroot} \
+  VERBOSE=1 \
+  prefix=%{_prefix}
+
+cp -r %{_builddir}/sc-im-%{version}/docs/man/man3     %{buildroot}%{_mandir}/
 
 install -p -d %{buildroot}%{_prefix}/bin
 install -p -d %{buildroot}%{_datadir}/sc-im
@@ -87,14 +93,19 @@ install -p         %{_builddir}/sc-im-%{version}/LICENSE %{buildroot}%{_datadir}
 %{_datadir}/%{name}/plot_line
 %{_datadir}/%{name}/plot_pie
 %{_datadir}/%{name}/plot_scatter
-%{_datadir}/%{name}/sc-im_help
+%doc     %{_datadir}/%{name}/sc-im_help
 %doc     %{_mandir}/man1/sc-im.1.gz
+%doc     %{_mandir}/man3/*
 %license %{_datadir}/%{name}/LICENSE
 
 %changelog
-* Wed May 21 2025 KOSHIKAWA Kenichi <reishoku.misc@pm.me>
+* Wed May 21 2025 KOSHIKAWA Kenichi <reishoku.misc@pm.me> - 0.8.4-3
+- Fix dependencies, etc...
+- Increase upper row count limit
+
+* Wed May 21 2025 KOSHIKAWA Kenichi <reishoku.misc@pm.me> - 0.8.4-2
 - Adjust RPM spec for EL10 platform
 - Built for EL10 platform
 
-* Sat May 10 2025 KOSHIKAWA Kenichi <reishoku.misc@pm.me>
+* Sat May 10 2025 KOSHIKAWA Kenichi <reishoku.misc@pm.me> - 0.8.4-1
 - Initial RPM Package build (RPM spec is not completed, but builds successfully)
